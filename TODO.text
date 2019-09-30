@@ -1,0 +1,26 @@
+Objetivos:
+
+    01 - Renderizar canvas 10x20;
+    02 - Realizar a movimentação da peça;
+    03 - Implementar controle da peça;
+    04 - Gerar peças aleatórias;
+    05 - Delimitar movimentação e posicionar peça no final do tabuleiro;
+        05.1 - Implementar colisão das peças;
+        05.2 - Posicionar peças uma em cima da outra;
+        05.3 - Encaixar peças;
+    06 - Verificar linha preenchida;
+    07 - Verificar quantidade de linhas preenchidas;
+    08 - Aplicar pontuação;
+    09 - Implementar verificação de derrota;
+    10 - Implementar timer;
+    11 - Adicionar rodada no ranking;
+
+
+
+
+
+A mais: 
+
+    1 - Música de fundo;
+    2 - Mostrar próxima peça;
+    3 - Trocar pela próxima peça;
