@@ -1,9 +1,5 @@
 const ROWS = 20;
 const COLUMNS = 10;
-const SQUARE = 20;
-const VACANT = "white";
-const COLORS = ['orange', 'red', 'indigo', 'blue', 'purple', 'green', 'cyan', 'yellow'];
-const POINT = 10;
 const html_score = document.getElementById('score');
 
 
@@ -38,7 +34,7 @@ drawBoard(ctx);
 setScore(0);
 /* BOARD */
 
-const PIECES = [L, J, T, U, I, O];
+const PIECES = [[L, 'blue'], [J, 'red'], [T, 'purple'], [U, 'green'], [I, 'cyan'], [O, 'yellow']];
 
 /* PIECE */
 
@@ -166,9 +162,8 @@ Piece.prototype.lock = function () {
 
 function newRandomPiece() {
   const randomPieceN = Math.floor(Math.random() * PIECES.length);
-  const randomColorN = Math.floor(Math.random() * COLORS.length);
 
-  CURRENT_PIECE = new Piece(PIECES[randomPieceN], COLORS[randomColorN], ctx, newRandomPiece);
+  CURRENT_PIECE = new Piece(PIECES[randomPieceN][0], PIECES[randomPieceN][1], ctx, newRandomPiece);
 }
 
 

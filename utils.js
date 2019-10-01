@@ -1,6 +1,7 @@
-// const SQUARE = 20;
-// const VACANT = "white";
-// const COLORS = ['orange', 'red', 'indigo', 'blue', 'purple', 'green', 'cyan', 'yellow'];
+const SQUARE = 20;
+const VACANT = "white";
+const COLORS = ['red', 'blue', 'purple', 'green', 'cyan', 'yellow'];
+const POINT = 10;
 
 // const drawSquare = (x, y, fillColor, context) => {
 //   context.fillStyle = fillColor;
