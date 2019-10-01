@@ -17,6 +17,10 @@ const setScore = (value) => {
   html_score.innerText = 'Score: ' + score;
 }
 
+const getBonus = (qtdeRows) => {
+
+}
+
 const canvas = document.getElementById("tetris");
 const ctx = canvas.getContext("2d");
 
@@ -104,7 +108,7 @@ Piece.prototype.moveDown = function () {
     this.lock();
     let qtdeRows = removeFullRowsFromBoard();
     if (qtdeRows > 0) {
-      setScore(POINT * qtdeRows);
+      setScore(POINT * qtdeRows * qtdeRows);
       drawBoard();
     }
     newRandomPiece();
