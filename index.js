@@ -1,18 +1,37 @@
 const ROWS = 20;
 const COLUMNS = 10;
+const SQUARE = 20;
+const VACANT = "white";
+const COLORS = ['orange', 'red', 'indigo', 'blue', 'purple', 'green', 'cyan', 'yellow'];
+const POINT = 10;
+const html_score = document.getElementById('score');
 
+
+let score = 0;
 
 let CURRENT_PIECE;
 // let board = [];
 
+const setScore = (value) => {
+  score += value;
+  html_score.innerText = 'Score: ' + score;
+}
+
 const canvas = document.getElementById("tetris");
 const ctx = canvas.getContext("2d");
 
+const drawSquare = (x, y, fillColor) => {
+  ctx.fillStyle = fillColor;
+  ctx.fillRect(x * SQUARE, y * SQUARE, SQUARE, SQUARE);
+  ctx.strokeStyle = 'black';
+  ctx.strokeRect(x * SQUARE, y * SQUARE, SQUARE, SQUARE);
+};
 /* BOARD */
 
-const board = createBoard(20, 10, VACANT, ctx);
-drawBoard(board, 20, 10, ctx);
+const board = createBoard();
 
+drawBoard(ctx);
+setScore(0);
 /* BOARD */
 
 const PIECES = [L, J, T, U, I, O];
@@ -35,7 +54,7 @@ Piece.prototype.draw = function () {
   for (let r = 0; r < this.activeTetromino.length; r++) {
     for (let c = 0; c < this.activeTetromino.length; c++) {
       if (this.activeTetromino[r][c]) {
-        drawSquare(this.x + c, this.y + r, this.color, this.context);
+        drawSquare(this.x + c, this.y + r, this.color);
       }
     }
   }
@@ -45,7 +64,7 @@ Piece.prototype.undraw = function () {
   for (let r = 0; r < this.activeTetromino.length; r++) {
     for (let c = 0; c < this.activeTetromino.length; c++) {
       if (this.activeTetromino[r][c]) {
-        drawSquare(this.x + c, this.y + r, VACANT, this.context);
+        drawSquare(this.x + c, this.y + r, VACANT);
       }
     }
   }
@@ -83,7 +102,12 @@ Piece.prototype.moveDown = function () {
     this.draw();
   } else {
     this.lock();
-    this.reachEnd();
+    let qtdeRows = removeFullRowsFromBoard();
+    if (qtdeRows > 0) {
+      setScore(POINT * qtdeRows);
+      drawBoard();
+    }
+    newRandomPiece();
   }
 }
 Piece.prototype.moveLeft = function () {

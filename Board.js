@@ -1,19 +1,45 @@
-const createBoard = (rows, columns, color = VACANT) => {
-  let board = [];
-  for (let r = 0; r < rows; r++) {
-    board[r] = [];
-    for (let c = 0; c < columns; c++) {
-      board[r][c] = color;
+const createBoard = () => {
+  let newBoard = [];
+  for (let r = 0; r < ROWS; r++) {
+    newBoard[r] = [];
+    for (let c = 0; c < COLUMNS; c++) {
+      newBoard[r][c] = 'white';
     }
   }
 
-  return board;
+  return newBoard;
 };
 
-const drawBoard = (board, rows, columns, context) => {
-  for (let r = 0; r < rows; r++) {
-    for (let c = 0; c < columns; c++) {
-      drawSquare(c, r, board[c][r], context);
+const drawBoard = (context) => {
+  for (let r = 0; r < ROWS; r++) {
+    for (let c = 0; c < COLUMNS; c++) {
+      drawSquare(c, r, board[r][c], context);
     }
   }
 };
+
+const removeFullRowsFromBoard = () => {
+  let qtdeRows = 0;
+  for (let r = 0; r < ROWS; r++) {
+    let rowIsFull = true;
+
+    for (let c = 0; c < COLUMNS; c++) {
+      rowIsFull = rowIsFull && (board[r][c] != VACANT);
+    }
+
+    if (rowIsFull) {
+      for (let y = r; y > 1; y--) {
+        for (let c = 0; c < COLUMNS; c++) {
+          board[y][c] = board[y - 1][c];
+        }
+      }
+      for (let c = 0; c < COLUMNS; c++) {
+        board[0][c] = VACANT;
+      }
+
+      qtdeRows += 1;
+    }
+  }
+
+  return qtdeRows;
+}
