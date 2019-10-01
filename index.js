@@ -15,7 +15,7 @@ drawBoard(board, 20, 10, ctx);
 
 /* BOARD */
 
-const PIECES = [L, J, T, U, I, O];
+const PIECES = [[L, 'blue'], [J, 'red'], [T, 'purple'], [U, 'green'], [I, 'cyan'], [O, 'yellow']];
 
 /* PIECE */
 
@@ -138,9 +138,8 @@ Piece.prototype.lock = function () {
 
 function newRandomPiece() {
   const randomPieceN = Math.floor(Math.random() * PIECES.length);
-  const randomColorN = Math.floor(Math.random() * COLORS.length);
 
-  CURRENT_PIECE = new Piece(PIECES[randomPieceN], COLORS[randomColorN], ctx, newRandomPiece);
+  CURRENT_PIECE = new Piece(PIECES[randomPieceN][0], PIECES[randomPieceN][1], ctx, newRandomPiece);
 }
 
 
