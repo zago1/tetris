@@ -16,6 +16,9 @@ const btnStart = document.getElementById('btnStart');
 // Div de informações do jogo
 const divInfo = document.getElementById('gameInfo');
 
+// Tabela do historico de games jogados
+const gameTable = document.getElementById('gameTable');
+
 // Score do jogo
 let score = 0;
 
@@ -34,6 +37,7 @@ let CURRENT_PIECE;
 // let board = [];
 
 divInfo.style.display = 'none';
+gameTable.style.display='none';
 
 const setScore = (value) => {
   score += value;
@@ -191,6 +195,14 @@ Piece.prototype.lock = function () {
       if (this.y + r < 0) {
         // gameover = true;
         gameActive = false;
+
+        
+        $('#gameTable').DataTable().row.add( [
+          document.getElementById('txtName').value,
+          score, 
+          timeLevel,
+          getGameTime()]).draw(false);
+
         alert('Game Over!');
       }
 
@@ -209,8 +221,13 @@ function newRandomPiece() {
 setInterval(function () {
 
   if (gameActive) {
+    html_timer.innerHTML = "Tempo de jogo: " + getGameTime();
+  }
+}, 1000);
 
-    let difference = new Date() - initialDate;
+function getGameTime()
+{
+  let difference = new Date() - initialDate;
     let stringPad = "00";
 
     // Time calculations for hours, minutes and seconds
@@ -218,9 +235,9 @@ setInterval(function () {
     var minutes = (stringPad + Math.floor((difference % (1000 * 60 * 60)) / (1000 * 60))).slice(-stringPad.length);
     var seconds = (stringPad + Math.floor((difference % (1000 * 60)) / 1000)).slice(-stringPad.length);
 
-    html_timer.innerHTML = "Tempo de jogo: " + hours + ":" + minutes + ":" + seconds;
-  }
-}, 1000);
+    return(hours + ":" + minutes + ":" + seconds);
+}
+
 
 
 /* PIECE */
@@ -240,6 +257,34 @@ function startGame() {
 
     btnStart.style.display = 'none';
     divInfo.style.display = 'block';
+    gameTable.style.display='block';
+
+    $('#gameTable').DataTable( {
+      language: {
+        "decimal":        "",
+        "emptyTable":     "Nenhum registro disponível",
+        "info":           "Exibindo _START_ a _END_ de _TOTAL_ registros",
+        "infoEmpty":      "Exibindo 0 a 0 de 0 registros",
+        "infoFiltered":   "(filtrado de _MAX_ registros)",
+        "infoPostFix":    "",
+        "thousands":      ",",
+        "lengthMenu":     "Exibir _MENU_ valores",
+        "loadingRecords": "Carregando...",
+        "processing":     "Processando...",
+        "search":         "Procurar:",
+        "zeroRecords":    "Nenhum registro encontrado",
+        "paginate": {
+            "first":      "Primeiro",
+            "last":       "Último",
+            "next":       "Próximo",
+            "previous":   "Anterior"
+        },
+        "aria": {
+            "sortAscending":  ": Ative para ordenação ascendente",
+            "sortDescending": ": Ative para ordenação descendente"
+        }
+      }
+  } );
 
     if (selectSize.value == 1) {
       // Caso o usuário tenha informado o maior valor, então a altura e largura do canvas é reajustado
