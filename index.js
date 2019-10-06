@@ -1,9 +1,24 @@
 const ROWS = 20;
 const COLUMNS = 10;
+
+// HTML do score do jogo
 const html_score = document.getElementById('score');
+// HTML do tempo de jogo
+const html_timer = document.getElementById('timer');
+// HTML do nível de volocidade
+const html_timeLeve = document.getElementById('timeLevel');
 
-
+// Score do jogo
 let score = 0;
+
+// Variável para controle da volocidade do jogo com base no tempo (ms)
+let time = 1000;
+//Nível da velocidade. Utilizado para decrementar 0.1s a cada 500 pontos
+let timeLevel = 1;
+// Data de inicio do jogo. Utilizado para o cronometro
+let initialDate = new Date();
+// Status do jogo
+let gameActive = false;
 
 let CURRENT_PIECE;
 // let board = [];
@@ -11,6 +26,16 @@ let CURRENT_PIECE;
 const setScore = (value) => {
   score += value;
   html_score.innerText = 'Score: ' + score;
+
+  // Caso a pontuação exceda ou seja igual ao limite do nível (500 * nivel) e o tempo não tenha 
+  // atingido o mínimo (0.1s), então a velocidade do jogo é aumentada.
+  // Deste modo, temos 10 níveis de jogo, decrementados em 100ms. Para aumentar a quantidade, decrementar
+  // de 50ms em 50ms
+  if (score >= timeLevel*500 && time>100){
+    timeLevel++;
+    time-=100;
+    html_timeLeve.innerHTML="Level: "+timeLevel;
+  }
 }
 
 const getBonus = (qtdeRows) => {
@@ -101,6 +126,7 @@ Piece.prototype.moveDown = function () {
     this.y++;
     this.draw();
   } else {
+    console.log("teste");
     this.lock();
     let qtdeRows = removeFullRowsFromBoard();
     if (qtdeRows > 0) {
@@ -151,8 +177,8 @@ Piece.prototype.lock = function () {
       if (!this.activeTetromino[r][c]) { continue; }
       if (this.y + r < 0) {
         // gameover = true;
+        gameActive=false;
         alert('Game Over!');
-        break;
       }
 
       board[this.y + r][this.x + c] = this.color;
@@ -161,18 +187,35 @@ Piece.prototype.lock = function () {
 }
 
 function newRandomPiece() {
+
   const randomPieceN = Math.floor(Math.random() * PIECES.length);
 
   CURRENT_PIECE = new Piece(PIECES[randomPieceN][0], PIECES[randomPieceN][1], ctx, newRandomPiece);
 }
 
+setInterval(function() {
+
+  if(gameActive){
+  
+  let difference = new Date() - initialDate;
+  let stringPad = "00";
+
+  // Time calculations for hours, minutes and seconds
+  var hours = (stringPad + Math.floor((difference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60))).slice(-stringPad.length);
+  var minutes = (stringPad + Math.floor((difference % (1000 * 60 * 60)) / (1000 * 60))).slice(-stringPad.length);
+  var seconds = (stringPad + Math.floor((difference % (1000 * 60)) / 1000)).slice(-stringPad.length);
+
+  html_timer.innerHTML = "Tempo de jogo: " + hours + ":" + minutes + ":" + seconds;
+  }
+}, 1000);
+
 
 /* PIECE */
 
-
+gameActive=true;
+initialDate=new Date();
 newRandomPiece();
 
-// console.log(piece);
 
 document.addEventListener('keydown', (e) => {
   if (e.code === "ArrowLeft") {
@@ -195,6 +238,6 @@ CURRENT_PIECE.draw();
 
 setInterval(() => {
   CURRENT_PIECE.moveDown();
-}, 900);
+}, time);
 
 
