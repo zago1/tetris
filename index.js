@@ -1,5 +1,5 @@
-const ROWS = 20;
-const COLUMNS = 10;
+let ROWS = 20;
+let COLUMNS = 10;
 
 // HTML do score do jogo
 const html_score = document.getElementById('score');
@@ -9,6 +9,12 @@ const html_timer = document.getElementById('timer');
 const html_timeLeve = document.getElementById('timeLevel');
 // HTML da quantidade de linhas removidas
 const html_rows = document.getElementById('completeRows');
+
+// Botão de inicialização do jogo
+const btnStart = document.getElementById('btnStart');
+
+// Div de informações do jogo
+const divInfo = document.getElementById('gameInfo');
 
 // Score do jogo
 let score = 0;
@@ -27,19 +33,21 @@ let completeRows = 0;
 let CURRENT_PIECE;
 // let board = [];
 
+divInfo.style.display = 'none';
+
 const setScore = (value) => {
   score += value;
   html_score.innerText = 'Score: ' + score;
-  html_rows.innerText = 'Linhas: '+completeRows;
+  html_rows.innerText = 'Linhas: ' + completeRows;
 
   // Caso a pontuação exceda ou seja igual ao limite do nível (500 * nivel) e o tempo não tenha 
   // atingido o mínimo (0.1s), então a velocidade do jogo é aumentada.
   // Deste modo, temos 10 níveis de jogo, decrementados em 100ms. Para aumentar a quantidade, decrementar
   // de 50ms em 50ms
-  if (score >= timeLevel*500 && time>100){
+  if (score >= timeLevel * 500 && time > 100) {
     timeLevel++;
-    time-=100;
-    html_timeLeve.innerHTML="Level: "+timeLevel;
+    time -= 100;
+    html_timeLeve.innerHTML = "Level: " + timeLevel;
   }
 }
 
@@ -47,10 +55,10 @@ const getBonus = (qtdeRows) => {
 
 }
 
-const canvas = document.getElementById("tetris");
-const ctx = canvas.getContext("2d");
+let canvas = null;
+let ctx = null;
 
-const drawSquare = (x, y, fillColor) => {
+let drawSquare = (x, y, fillColor) => {
   ctx.fillStyle = fillColor;
   ctx.fillRect(x * SQUARE, y * SQUARE, SQUARE, SQUARE);
   ctx.strokeStyle = 'black';
@@ -58,9 +66,9 @@ const drawSquare = (x, y, fillColor) => {
 };
 /* BOARD */
 
-const board = createBoard();
+let board = null;
 
-drawBoard(ctx);
+
 setScore(0);
 /* BOARD */
 
@@ -134,7 +142,7 @@ Piece.prototype.moveDown = function () {
     this.lock();
     let qtdeRows = removeFullRowsFromBoard();
     if (qtdeRows > 0) {
-      completeRows+=qtdeRows;
+      completeRows += qtdeRows;
       setScore(POINT * qtdeRows * qtdeRows);
       drawBoard();
     }
@@ -182,7 +190,7 @@ Piece.prototype.lock = function () {
       if (!this.activeTetromino[r][c]) { continue; }
       if (this.y + r < 0) {
         // gameover = true;
-        gameActive=false;
+        gameActive = false;
         alert('Game Over!');
       }
 
@@ -198,28 +206,71 @@ function newRandomPiece() {
   CURRENT_PIECE = new Piece(PIECES[randomPieceN][0], PIECES[randomPieceN][1], ctx, newRandomPiece);
 }
 
-setInterval(function() {
+setInterval(function () {
 
-  if(gameActive){
-  
-  let difference = new Date() - initialDate;
-  let stringPad = "00";
+  if (gameActive) {
 
-  // Time calculations for hours, minutes and seconds
-  var hours = (stringPad + Math.floor((difference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60))).slice(-stringPad.length);
-  var minutes = (stringPad + Math.floor((difference % (1000 * 60 * 60)) / (1000 * 60))).slice(-stringPad.length);
-  var seconds = (stringPad + Math.floor((difference % (1000 * 60)) / 1000)).slice(-stringPad.length);
+    let difference = new Date() - initialDate;
+    let stringPad = "00";
 
-  html_timer.innerHTML = "Tempo de jogo: " + hours + ":" + minutes + ":" + seconds;
+    // Time calculations for hours, minutes and seconds
+    var hours = (stringPad + Math.floor((difference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60))).slice(-stringPad.length);
+    var minutes = (stringPad + Math.floor((difference % (1000 * 60 * 60)) / (1000 * 60))).slice(-stringPad.length);
+    var seconds = (stringPad + Math.floor((difference % (1000 * 60)) / 1000)).slice(-stringPad.length);
+
+    html_timer.innerHTML = "Tempo de jogo: " + hours + ":" + minutes + ":" + seconds;
   }
 }, 1000);
 
 
 /* PIECE */
+function startGame() {
+  let textName = document.getElementById('txtName');
+  let selectSize = document.getElementById('selectSize');
 
-gameActive=true;
-initialDate=new Date();
-newRandomPiece();
+  if (textName.value == '') {
+    // Caso o usuário não informe o nome, o jogo não começa e o campo é marcado em vermelho
+    textName.className = 'form-control is-invalid';
+  }
+  else {
+    // Caso o usuáro tenha informado o nome, então o jogo é configurado inicialmente
+    
+    textName.className = 'form-control is-valid';
+    selectSize.className = 'form-control is-valid';
+
+    btnStart.style.display = 'none';
+    divInfo.style.display = 'block';
+
+    if (selectSize.value == 1) {
+      // Caso o usuário tenha informado o maior valor, então a altura e largura do canvas é reajustado
+      COLUMNS = 22;
+      ROWS = 44;
+
+      document.getElementById("tetris").width = '440';
+      document.getElementById("tetris").height = '880';
+    }
+
+    canvas = document.getElementById("tetris");
+    ctx = canvas.getContext("2d");
+
+    board = createBoard();
+    drawBoard(ctx);
+
+    // Define o game como ativo
+    gameActive = true;
+    // Guarda a data e hora do inicio do jogo
+    initialDate = new Date();
+
+    //Começa o evento de criação de peças
+    newRandomPiece();
+    CURRENT_PIECE.draw();
+    setInterval(() => {
+    CURRENT_PIECE.moveDown();
+
+    }, time);
+  }
+}
+
 
 
 document.addEventListener('keydown', (e) => {
@@ -238,11 +289,3 @@ document.addEventListener('keydown', (e) => {
 
   }
 });
-
-CURRENT_PIECE.draw();
-
-setInterval(() => {
-  CURRENT_PIECE.moveDown();
-}, time);
-
-
