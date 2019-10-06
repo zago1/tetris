@@ -7,6 +7,8 @@ const html_score = document.getElementById('score');
 const html_timer = document.getElementById('timer');
 // HTML do nível de volocidade
 const html_timeLeve = document.getElementById('timeLevel');
+// HTML da quantidade de linhas removidas
+const html_rows = document.getElementById('completeRows');
 
 // Score do jogo
 let score = 0;
@@ -19,6 +21,8 @@ let timeLevel = 1;
 let initialDate = new Date();
 // Status do jogo
 let gameActive = false;
+// Quantidade de linhas removidas
+let completeRows = 0;
 
 let CURRENT_PIECE;
 // let board = [];
@@ -26,6 +30,7 @@ let CURRENT_PIECE;
 const setScore = (value) => {
   score += value;
   html_score.innerText = 'Score: ' + score;
+  html_rows.innerText = 'Linhas: '+completeRows;
 
   // Caso a pontuação exceda ou seja igual ao limite do nível (500 * nivel) e o tempo não tenha 
   // atingido o mínimo (0.1s), então a velocidade do jogo é aumentada.
@@ -126,10 +131,10 @@ Piece.prototype.moveDown = function () {
     this.y++;
     this.draw();
   } else {
-    console.log("teste");
     this.lock();
     let qtdeRows = removeFullRowsFromBoard();
     if (qtdeRows > 0) {
+      completeRows+=qtdeRows;
       setScore(POINT * qtdeRows * qtdeRows);
       drawBoard();
     }
