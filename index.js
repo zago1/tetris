@@ -1,7 +1,8 @@
 const ROWS = 20;
 const COLUMNS = 10;
 const html_score = document.getElementById('score');
-
+let gameOver = false;
+let velocidade = 2;
 
 let score = 0;
 
@@ -105,6 +106,7 @@ Piece.prototype.moveDown = function () {
     let qtdeRows = removeFullRowsFromBoard();
     if (qtdeRows > 0) {
       setScore(POINT * qtdeRows * qtdeRows);
+      increaseVelocity();
       drawBoard();
     }
     newRandomPiece();
@@ -150,7 +152,7 @@ Piece.prototype.lock = function () {
     for (let c = 0; c < this.activeTetromino.length; c++) {
       if (!this.activeTetromino[r][c]) { continue; }
       if (this.y + r < 0) {
-        // gameover = true;
+        gameOver = true;
         alert('Game Over!');
         break;
       }
@@ -160,8 +162,17 @@ Piece.prototype.lock = function () {
   }
 }
 
+function increaseVelocity() {
+  if (score > 0 && score % 100 === 0) {
+    velocidade += 0.5;
+    console.log(velocidade);
+  }
+}
+
 function newRandomPiece() {
-  const randomPieceN = Math.floor(Math.random() * PIECES.length);
+  let randomPieceN = Math.floor(Math.random() * PIECES.length);
+  randomPieceN = Math.floor(Math.random() * PIECES.length);
+  randomPieceN = Math.floor(Math.random() * PIECES.length);
 
   CURRENT_PIECE = new Piece(PIECES[randomPieceN][0], PIECES[randomPieceN][1], ctx, newRandomPiece);
 }
@@ -173,6 +184,7 @@ function newRandomPiece() {
 newRandomPiece();
 
 // console.log(piece);
+let dropStart = Date.now();
 
 document.addEventListener('keydown', (e) => {
   if (e.code === "ArrowLeft") {
@@ -191,10 +203,33 @@ document.addEventListener('keydown', (e) => {
   }
 });
 
-CURRENT_PIECE.draw();
 
-setInterval(() => {
-  CURRENT_PIECE.moveDown();
-}, 900);
+function drop() {
+  let now = Date.now();
+
+  let delta = now - dropStart;
+
+  if (delta > 1000/velocidade) {
+    CURRENT_PIECE.moveDown();
+    dropStart = Date.now();
+  }
+
+  if (!gameOver) {
+    requestAnimationFrame(drop);
+  }
+  // let game = setInterval(() => {
+  //   CURRENT_PIECE.moveDown();
+
+  //   if (gameOver) {
+  //     clearInterval(game);
+  //   }
+  // }, velocidade);
+}
+
+drop();
+
+
+// CURRENT_PIECE.draw();
+
 
 
