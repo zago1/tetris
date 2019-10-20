@@ -34,7 +34,7 @@ let initialDate = new Date();
 let completeRows = 0;
 
 let CURRENT_PIECE;
-// let board = [];
+let board = [];
 
 divInfo.style.display = 'none';
 gameTable.style.display = 'none';
@@ -70,7 +70,7 @@ let drawSquare = (x, y, fillColor) => {
 };
 /* BOARD */
 
-let board = null;
+// let board = null;
 
 
 setScore(0);
@@ -86,7 +86,7 @@ function Piece(tetromino, color, context, onReachEnd) {
   this.activeTetromino = this.tetromino[this.tetrominoN];
   this.color = color;
   this.x = 3;
-  this.y = -2;
+  this.y = ROWS+2;
   this.context = context;
 
   this.reachEnd = onReachEnd;
@@ -118,17 +118,14 @@ Piece.prototype.collision = function (x, y, currentPiece) {
       if (!currentPiece[r][c]) {
         continue;
       }
-
       let newX = this.x + c + x;
-      let newY = this.y + r + y;
+      let newY = this.y + r - y;
 
-      if (newX < 0 || newX >= COLUMNS || newY >= ROWS) {
+      if (newX < 0 || newX >= COLUMNS || newY < 0) {
         return true;
       }
 
-
-      if (newY < 0) { continue; }
-
+      if (newY >= ROWS) { continue; }
 
       if (board[newY][newX] != VACANT) { return true; }
     }
@@ -137,10 +134,10 @@ Piece.prototype.collision = function (x, y, currentPiece) {
   return false;
 }
 
-Piece.prototype.moveDown = function () {
+Piece.prototype.moveUp = function () {
   if (!this.collision(0, 1, this.activeTetromino)) {
     this.undraw();
-    this.y++;
+    this.y--;
     this.draw();
   } else {
     this.lock();
@@ -149,7 +146,7 @@ Piece.prototype.moveDown = function () {
       if (qtdeRows > 0) {
         completeRows += qtdeRows;
         setScore(POINT * qtdeRows * qtdeRows);
-        drawBoard();
+        drawBoard(ctx);
       }
       newRandomPiece();
     }
@@ -191,15 +188,22 @@ Piece.prototype.rotate = function () {
 }
 
 Piece.prototype.lock = function () {
+  let newY = 0; 
+  let newX = 0;
   for (let r = 0; r < this.activeTetromino.length; r++) {
     for (let c = 0; c < this.activeTetromino.length; c++) {
       if (!this.activeTetromino[r][c]) { continue; }
-      if (this.y + r < 0) {
+      newY = this.y + r;
+      newX = this.x + c;
+      if (newY >= ROWS) {
         gameOver = true;
         break;
       }
 
-      board[this.y + r][this.x + c] = this.color;
+      // if (newY < 0) newY = 0;
+
+      
+      board[newY][newX] = this.color;
     }
   }
 }
@@ -237,7 +241,7 @@ function drop() {
   let delta = now - dropStart;
 
   if (delta > time) {
-    CURRENT_PIECE.moveDown();
+    CURRENT_PIECE.moveUp();
     dropStart = Date.now();
   }
 
@@ -350,12 +354,10 @@ function addArrowsControl() {
       CURRENT_PIECE.moveRight();
     }
     if (e.code === "ArrowUp") {
-      CURRENT_PIECE.rotate();
-
+      CURRENT_PIECE.moveUp();
     }
     if (e.code === "ArrowDown") {
-      CURRENT_PIECE.moveDown();
-
+      CURRENT_PIECE.rotate();
     }
   });
 }
