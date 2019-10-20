@@ -7,7 +7,7 @@ let gameOver;
 const html_score = document.getElementById('score');
 // HTML do tempo de jogo
 const html_timer = document.getElementById('timer');
-// HTML do nível de volocidade
+// HTML do nível de velocidade
 const html_timeLeve = document.getElementById('timeLevel');
 // HTML da quantidade de linhas removidas
 const html_rows = document.getElementById('completeRows');
@@ -15,15 +15,17 @@ const html_rows = document.getElementById('completeRows');
 // Botão de inicialização do jogo
 const btnStart = document.getElementById('btnStart');
 
+//Botão de próxima partida
+const btnProximaPartida = document.getElementById('btnRestart');
+
 // Div de informações do jogo
 const divInfo = document.getElementById('gameInfo');
 
 // Tabela do historico de games jogados
-const gameTable = document.getElementById('gameTable');
+const gameTable = document.getElementById('divGameTable');
 
 // Score do jogo
 let score = 0;
-
 // Variável para controle da volocidade do jogo com base no tempo (ms)
 let time = 1000;
 //Nível da velocidade. Utilizado para decrementar 0.1s a cada 500 pontos
@@ -36,8 +38,38 @@ let completeRows = 0;
 let CURRENT_PIECE;
 let board = [];
 
+
+$('#gameTable').DataTable({
+  language: {
+    "decimal": "",
+    "emptyTable": "Nenhum registro disponível",
+    "info": "Exibindo _START_ a _END_ de _TOTAL_ registros",
+    "infoEmpty": "Exibindo 0 a 0 de 0 registros",
+    "infoFiltered": "(filtrado de _MAX_ registros)",
+    "infoPostFix": "",
+    "thousands": ",",
+    "lengthMenu": "Exibir _MENU_ valores",
+    "loadingRecords": "Carregando...",
+    "processing": "Processando...",
+    "search": "Procurar:",
+    "zeroRecords": "Nenhum registro encontrado",
+    "paginate": {
+      "first": "Primeiro",
+      "last": "Último",
+      "next": "Próximo",
+      "previous": "Anterior"
+    },
+    "aria": {
+      "sortAscending": ": Ative para ordenação ascendente",
+      "sortDescending": ": Ative para ordenação descendente"
+    }
+  }
+});
+
 divInfo.style.display = 'none';
 gameTable.style.display = 'none';
+
+btnProximaPartida.style.display = 'none';
 
 const setScore = (value) => {
   score += value;
@@ -86,7 +118,7 @@ function Piece(tetromino, color, context, onReachEnd) {
   this.activeTetromino = this.tetromino[this.tetrominoN];
   this.color = color;
   this.x = 3;
-  this.y = ROWS+2;
+  this.y = ROWS + 2;
   this.context = context;
 
   this.reachEnd = onReachEnd;
@@ -188,7 +220,7 @@ Piece.prototype.rotate = function () {
 }
 
 Piece.prototype.lock = function () {
-  let newY = 0; 
+  let newY = 0;
   let newX = 0;
   for (let r = 0; r < this.activeTetromino.length; r++) {
     for (let c = 0; c < this.activeTetromino.length; c++) {
@@ -202,7 +234,7 @@ Piece.prototype.lock = function () {
 
       // if (newY < 0) newY = 0;
 
-      
+
       board[newY][newX] = this.color;
     }
   }
@@ -255,7 +287,10 @@ function drop() {
       getGameTime()]).draw(false);
 
     removeArrowsControl()
-    alert('Game Over!');
+    alert('Game Over! Informe novamente um nome para continuar a próxima partida');
+
+    btnProximaPartida.style.display = 'block';
+    document.getElementById('txtName').value = '';
   }
 }
 
@@ -287,32 +322,7 @@ function startGame() {
     divInfo.style.display = 'block';
     gameTable.style.display = 'block';
 
-    $('#gameTable').DataTable({
-      language: {
-        "decimal": "",
-        "emptyTable": "Nenhum registro disponível",
-        "info": "Exibindo _START_ a _END_ de _TOTAL_ registros",
-        "infoEmpty": "Exibindo 0 a 0 de 0 registros",
-        "infoFiltered": "(filtrado de _MAX_ registros)",
-        "infoPostFix": "",
-        "thousands": ",",
-        "lengthMenu": "Exibir _MENU_ valores",
-        "loadingRecords": "Carregando...",
-        "processing": "Processando...",
-        "search": "Procurar:",
-        "zeroRecords": "Nenhum registro encontrado",
-        "paginate": {
-          "first": "Primeiro",
-          "last": "Último",
-          "next": "Próximo",
-          "previous": "Anterior"
-        },
-        "aria": {
-          "sortAscending": ": Ative para ordenação ascendente",
-          "sortDescending": ": Ative para ordenação descendente"
-        }
-      }
-    });
+
 
     if (selectSize.value == 1) {
       // Caso o usuário tenha informado o maior valor, então a altura e largura do canvas é reajustado
@@ -331,16 +341,52 @@ function startGame() {
 
     addArrowsControl()
 
-    // Define o game como ativo
-    gameOver = false;
+    startPiece();
+  }
+}
 
-    // Guarda a data e hora do inicio do jogo
+function startPiece() {
+  // Define o game como ativo
+  gameOver = false;
+
+  // Guarda a data e hora do inicio do jogo
+  initialDate = new Date();
+  startTime();
+
+  //Começa o evento de criação de peças
+  newRandomPiece();
+  drop();
+}
+
+function restartGame() {
+  let textName = document.getElementById('txtName');
+
+  if (textName.value == '') {
+    // Caso o usuário não informe o nome, o jogo não começa e o campo é marcado em vermelho
+    textName.className = 'form-control is-invalid';
+  }
+  else {
+    
+    btnProximaPartida.style.display = 'none';
+
+    html_score.innerText = 'Score: 0';
+    html_timeLeve.innerText = 'Level: 0';
+    html_rows.innerText = 'Linhas: 0';
+    html_timer.innerText = 'Tempo de jogo: 00:00:00';
+
+    score = 0;
+    time = 1000;
+    timeLevel = 1;
     initialDate = new Date();
-    startTime();
+    completeRows = 0;
 
-    //Começa o evento de criação de peças
-    newRandomPiece();
-    drop();
+    canvas = document.getElementById("tetris");
+    ctx = canvas.getContext("2d");
+
+    board = createBoard();
+    drawBoard(ctx);
+
+    startPiece();
   }
 }
 
