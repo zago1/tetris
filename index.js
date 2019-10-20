@@ -1,6 +1,8 @@
 let ROWS = 20;
 let COLUMNS = 10;
 
+let gameOver;
+
 // HTML do score do jogo
 const html_score = document.getElementById('score');
 // HTML do tempo de jogo
@@ -28,16 +30,14 @@ let time = 1000;
 let timeLevel = 1;
 // Data de inicio do jogo. Utilizado para o cronometro
 let initialDate = new Date();
-// Status do jogo
-let gameActive = false;
 // Quantidade de linhas removidas
 let completeRows = 0;
 
 let CURRENT_PIECE;
-// let board = [];
+let board = [];
 
 divInfo.style.display = 'none';
-gameTable.style.display='none';
+gameTable.style.display = 'none';
 
 const setScore = (value) => {
   score += value;
@@ -70,7 +70,7 @@ let drawSquare = (x, y, fillColor) => {
 };
 /* BOARD */
 
-let board = null;
+// let board = null;
 
 
 setScore(0);
@@ -86,7 +86,7 @@ function Piece(tetromino, color, context, onReachEnd) {
   this.activeTetromino = this.tetromino[this.tetrominoN];
   this.color = color;
   this.x = 3;
-  this.y = -2;
+  this.y = ROWS+2;
   this.context = context;
 
   this.reachEnd = onReachEnd;
@@ -118,17 +118,14 @@ Piece.prototype.collision = function (x, y, currentPiece) {
       if (!currentPiece[r][c]) {
         continue;
       }
-
       let newX = this.x + c + x;
-      let newY = this.y + r + y;
+      let newY = this.y + r - y;
 
-      if (newX < 0 || newX >= COLUMNS || newY >= ROWS) {
+      if (newX < 0 || newX >= COLUMNS || newY < 0) {
         return true;
       }
 
-
-      if (newY < 0) { continue; }
-
+      if (newY >= ROWS) { continue; }
 
       if (board[newY][newX] != VACANT) { return true; }
     }
@@ -137,20 +134,22 @@ Piece.prototype.collision = function (x, y, currentPiece) {
   return false;
 }
 
-Piece.prototype.moveDown = function () {
+Piece.prototype.moveUp = function () {
   if (!this.collision(0, 1, this.activeTetromino)) {
     this.undraw();
-    this.y++;
+    this.y--;
     this.draw();
   } else {
     this.lock();
-    let qtdeRows = removeFullRowsFromBoard();
-    if (qtdeRows > 0) {
-      completeRows += qtdeRows;
-      setScore(POINT * qtdeRows * qtdeRows);
-      drawBoard();
+    if (!gameOver) {
+      let qtdeRows = removeFullRowsFromBoard();
+      if (qtdeRows > 0) {
+        completeRows += qtdeRows;
+        setScore(POINT * qtdeRows * qtdeRows);
+        drawBoard(ctx);
+      }
+      newRandomPiece();
     }
-    newRandomPiece();
   }
 }
 Piece.prototype.moveLeft = function () {
@@ -189,27 +188,26 @@ Piece.prototype.rotate = function () {
 }
 
 Piece.prototype.lock = function () {
+  let newY = 0; 
+  let newX = 0;
   for (let r = 0; r < this.activeTetromino.length; r++) {
     for (let c = 0; c < this.activeTetromino.length; c++) {
       if (!this.activeTetromino[r][c]) { continue; }
-      if (this.y + r < 0) {
-        // gameover = true;
-        gameActive = false;
-
-        
-        $('#gameTable').DataTable().row.add( [
-          document.getElementById('txtName').value,
-          score, 
-          timeLevel,
-          getGameTime()]).draw(false);
-
-        alert('Game Over!');
+      newY = this.y + r;
+      newX = this.x + c;
+      if (newY >= ROWS) {
+        gameOver = true;
+        break;
       }
 
-      board[this.y + r][this.x + c] = this.color;
+      // if (newY < 0) newY = 0;
+
+      
+      board[newY][newX] = this.color;
     }
   }
 }
+
 
 function newRandomPiece() {
 
@@ -218,29 +216,59 @@ function newRandomPiece() {
   CURRENT_PIECE = new Piece(PIECES[randomPieceN][0], PIECES[randomPieceN][1], ctx, newRandomPiece);
 }
 
-setInterval(function () {
 
-  if (gameActive) {
-    html_timer.innerHTML = "Tempo de jogo: " + getGameTime();
-  }
-}, 1000);
-
-function getGameTime()
-{
+function getGameTime() {
   let difference = new Date() - initialDate;
-    let stringPad = "00";
+  let stringPad = "00";
 
-    // Time calculations for hours, minutes and seconds
-    var hours = (stringPad + Math.floor((difference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60))).slice(-stringPad.length);
-    var minutes = (stringPad + Math.floor((difference % (1000 * 60 * 60)) / (1000 * 60))).slice(-stringPad.length);
-    var seconds = (stringPad + Math.floor((difference % (1000 * 60)) / 1000)).slice(-stringPad.length);
+  // Time calculations for hours, minutes and seconds
+  var hours = (stringPad + Math.floor((difference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60))).slice(-stringPad.length);
+  var minutes = (stringPad + Math.floor((difference % (1000 * 60 * 60)) / (1000 * 60))).slice(-stringPad.length);
+  var seconds = (stringPad + Math.floor((difference % (1000 * 60)) / 1000)).slice(-stringPad.length);
 
-    return(hours + ":" + minutes + ":" + seconds);
+  return (hours + ":" + minutes + ":" + seconds);
 }
 
 
 
 /* PIECE */
+
+let dropStart = Date.now();
+
+function drop() {
+  let now = Date.now();
+
+  let delta = now - dropStart;
+
+  if (delta > time) {
+    CURRENT_PIECE.moveUp();
+    dropStart = Date.now();
+  }
+
+  if (!gameOver) {
+    requestAnimationFrame(drop);
+  } else {
+    $('#gameTable').DataTable().row.add([
+      document.getElementById('txtName').value,
+      score,
+      timeLevel,
+      getGameTime()]).draw(false);
+
+    removeArrowsControl()
+    alert('Game Over!');
+  }
+}
+
+function startTime() {
+  let timeInterval = setInterval(() => {
+    if (!gameOver) {
+      html_timer.innerHTML = "Tempo de jogo: " + getGameTime();
+    } else {
+      clearInterval(timeInterval);
+    }
+  }, 1000);
+}
+
 function startGame() {
   let textName = document.getElementById('txtName');
   let selectSize = document.getElementById('selectSize');
@@ -251,40 +279,40 @@ function startGame() {
   }
   else {
     // Caso o usuáro tenha informado o nome, então o jogo é configurado inicialmente
-    
+
     textName.className = 'form-control is-valid';
     selectSize.className = 'form-control is-valid';
 
     btnStart.style.display = 'none';
     divInfo.style.display = 'block';
-    gameTable.style.display='block';
+    gameTable.style.display = 'block';
 
-    $('#gameTable').DataTable( {
+    $('#gameTable').DataTable({
       language: {
-        "decimal":        "",
-        "emptyTable":     "Nenhum registro disponível",
-        "info":           "Exibindo _START_ a _END_ de _TOTAL_ registros",
-        "infoEmpty":      "Exibindo 0 a 0 de 0 registros",
-        "infoFiltered":   "(filtrado de _MAX_ registros)",
-        "infoPostFix":    "",
-        "thousands":      ",",
-        "lengthMenu":     "Exibir _MENU_ valores",
+        "decimal": "",
+        "emptyTable": "Nenhum registro disponível",
+        "info": "Exibindo _START_ a _END_ de _TOTAL_ registros",
+        "infoEmpty": "Exibindo 0 a 0 de 0 registros",
+        "infoFiltered": "(filtrado de _MAX_ registros)",
+        "infoPostFix": "",
+        "thousands": ",",
+        "lengthMenu": "Exibir _MENU_ valores",
         "loadingRecords": "Carregando...",
-        "processing":     "Processando...",
-        "search":         "Procurar:",
-        "zeroRecords":    "Nenhum registro encontrado",
+        "processing": "Processando...",
+        "search": "Procurar:",
+        "zeroRecords": "Nenhum registro encontrado",
         "paginate": {
-            "first":      "Primeiro",
-            "last":       "Último",
-            "next":       "Próximo",
-            "previous":   "Anterior"
+          "first": "Primeiro",
+          "last": "Último",
+          "next": "Próximo",
+          "previous": "Anterior"
         },
         "aria": {
-            "sortAscending":  ": Ative para ordenação ascendente",
-            "sortDescending": ": Ative para ordenação descendente"
+          "sortAscending": ": Ative para ordenação ascendente",
+          "sortDescending": ": Ative para ordenação descendente"
         }
       }
-  } );
+    });
 
     if (selectSize.value == 1) {
       // Caso o usuário tenha informado o maior valor, então a altura e largura do canvas é reajustado
@@ -301,36 +329,43 @@ function startGame() {
     board = createBoard();
     drawBoard(ctx);
 
+    addArrowsControl()
+
     // Define o game como ativo
-    gameActive = true;
+    gameOver = false;
+
     // Guarda a data e hora do inicio do jogo
     initialDate = new Date();
+    startTime();
 
     //Começa o evento de criação de peças
     newRandomPiece();
-    CURRENT_PIECE.draw();
-    setInterval(() => {
-    CURRENT_PIECE.moveDown();
-
-    }, time);
+    drop();
   }
 }
 
 
+function addArrowsControl() {
+  document.addEventListener('keydown', (e) => {
+    if (e.code === "ArrowLeft") {
+      CURRENT_PIECE.moveLeft();
+    }
+    if (e.code === "ArrowRight") {
+      CURRENT_PIECE.moveRight();
+    }
+    if (e.code === "ArrowUp") {
+      CURRENT_PIECE.moveUp();
+    }
+    if (e.code === "ArrowDown") {
+      CURRENT_PIECE.rotate();
+    }
+  });
+}
 
-document.addEventListener('keydown', (e) => {
-  if (e.code === "ArrowLeft") {
-    CURRENT_PIECE.moveLeft();
-  }
-  if (e.code === "ArrowRight") {
-    CURRENT_PIECE.moveRight();
-  }
-  if (e.code === "ArrowUp") {
-    CURRENT_PIECE.rotate();
+function removeArrowsControl() {
+  // document.removeEventListener('keydown');
+}
 
-  }
-  if (e.code === "ArrowDown") {
-    CURRENT_PIECE.moveDown();
+// console.log(piece);
 
-  }
-});
+// CURRENT_PIECE.draw();

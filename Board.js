@@ -28,13 +28,13 @@ const removeFullRowsFromBoard = () => {
     }
 
     if (rowIsFull) {
-      for (let y = r; y > 1; y--) {
+      for (let y = r; y < ROWS - 1; y++) {
         for (let c = 0; c < COLUMNS; c++) {
-          board[y][c] = board[y - 1][c];
+          board[y][c] = board[y + 1][c];
         }
       }
       for (let c = 0; c < COLUMNS; c++) {
-        board[0][c] = VACANT;
+        board[ROWS - 1][c] = VACANT;
       }
 
       qtdeRows += 1;
