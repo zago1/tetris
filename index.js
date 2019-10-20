@@ -117,7 +117,7 @@ function Piece(tetromino, color, context, onReachEnd) {
   this.tetrominoN = 0;
   this.activeTetromino = this.tetromino[this.tetrominoN];
   this.color = color;
-  this.x = 3;
+  this.x = (COLUMNS - 1) / 3;
   this.y = ROWS + 2;
   this.context = context;
 
@@ -366,7 +366,7 @@ function restartGame() {
     textName.className = 'form-control is-invalid';
   }
   else {
-    
+
     btnProximaPartida.style.display = 'none';
 
     html_score.innerText = 'Score: 0';
