@@ -14,9 +14,10 @@ const html_rows = document.getElementById('completeRows');
 
 // Botão de inicialização do jogo
 const btnStart = document.getElementById('btnStart');
-
-//Botão de próxima partida
+// Botão de próxima partida
 const btnProximaPartida = document.getElementById('btnRestart');
+// Botão de congelamento e descongelamento do jogo
+const btnPauseGame = document.getElementById('btnPauseGame');
 
 // Div de informações do jogo
 const divInfo = document.getElementById('gameInfo');
@@ -34,6 +35,8 @@ let timeLevel = 1;
 let initialDate = new Date();
 // Quantidade de linhas removidas
 let completeRows = 0;
+// Game pausado
+let gamePaused=false;
 
 let CURRENT_PIECE;
 let board = [];
@@ -70,6 +73,7 @@ divInfo.style.display = 'none';
 gameTable.style.display = 'none';
 
 btnProximaPartida.style.display = 'none';
+btnPauseGame.style.display='none';
 
 const setScore = (value) => {
   score += value;
@@ -167,6 +171,8 @@ Piece.prototype.collision = function (x, y, currentPiece) {
 }
 
 Piece.prototype.moveUp = function () {
+  if(!gamePaused)
+  {
   if (!this.collision(0, 1, this.activeTetromino)) {
     this.undraw();
     this.y--;
@@ -183,6 +189,7 @@ Piece.prototype.moveUp = function () {
       newRandomPiece();
     }
   }
+}
 }
 Piece.prototype.moveLeft = function () {
   if (!this.collision(-1, 0, this.activeTetromino)) {
@@ -242,7 +249,6 @@ Piece.prototype.lock = function () {
 
 
 function newRandomPiece() {
-
   const randomPieceN = Math.floor(Math.random() * PIECES.length);
 
   CURRENT_PIECE = new Piece(PIECES[randomPieceN][0], PIECES[randomPieceN][1], ctx, newRandomPiece);
@@ -321,6 +327,7 @@ function startGame() {
     btnStart.style.display = 'none';
     divInfo.style.display = 'block';
     gameTable.style.display = 'block';
+    btnPauseGame.style.display='initial';
 
 
 
@@ -388,6 +395,11 @@ function restartGame() {
 
     startPiece();
   }
+}
+
+function pauseGame()
+{
+  gamePaused=!gamePaused;
 }
 
 
